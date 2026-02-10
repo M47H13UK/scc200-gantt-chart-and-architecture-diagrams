@@ -394,14 +394,20 @@
       { label: '/rail/depart/{crs}', tip: '<strong>/rail/departures/{crs}</strong><br>Rail departure board data by 3-letter CRS code (e.g., LAN = Lancaster, PRE = Preston). Shows upcoming departures with live status.' },
       { label: '/weather', tip: '<strong>/weather?lat={lat}&amp;lon={lon}</strong><br>Current weather conditions for latitude/longitude. Data binned into geographic areas due to API rate limits. Updates every few minutes.' },
     ];
-    const eChipW = 155, eGap = 16;
+    const eChipW = 136, eGap = 12;
+    const etcW = 50;
     const eLabelSpace = 65; // room for "HTTP:" / "STOMP:" labels on the left
-    const eTotalW = eMods.length * eChipW + (eMods.length - 1) * eGap;
+    const eTotalW = eMods.length * eChipW + eMods.length * eGap + etcW;
     const eStartX = (ex + eLabelSpace) + ((ew - eLabelSpace) - eTotalW) / 2 + eChipW / 2;
     const eChipY = ey + 75;
     eMods.forEach((m, i) => {
       chip(svg, eStartX + i * (eChipW + eGap), eChipY, eChipW, chipH, m.label, '#FFFBEB', '#FCD34D', m.tip);
     });
+
+    // "etc." chip — indicates more endpoints exist
+    const etcCx = eStartX + (eMods.length - 1) * (eChipW + eGap) + eChipW / 2 + eGap + etcW / 2;
+    chip(svg, etcCx, eChipY, etcW, chipH, 'etc.', '#FFF7ED', '#FDBA74',
+      '<strong>Additional endpoints</strong><br>The university transport API exposes more routes beyond those listed here. These are the core endpoints used by the application.');
 
     // STOMP topic chips
     const sMods = [
