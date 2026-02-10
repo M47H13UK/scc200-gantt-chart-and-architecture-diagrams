@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1700">
+  <title>SCC.200 Group 6-6 &ndash; Activity Network &amp; Gantt Chart</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 14px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #F8FAFC;
+      color: #1E293B;
+      padding: 32px 40px 60px;
+      min-width: 1650px;
+    }
+
+    /* ===== HEADER ===== */
+    .page-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #0F172A;
+      letter-spacing: -0.02em;
+    }
+    .page-header .subtitle {
+      font-size: 0.95rem;
+      color: #64748B;
+      margin-top: 4px;
+    }
+
+    /* ===== SECTION TITLE ===== */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0F172A;
+      margin: 40px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #E2E8F0;
+    }
+    .section-title:first-of-type { margin-top: 0; }
+
+    /* ===== LEGEND ===== */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding: 12px 18px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #475569;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .legend-swatch {
+      width: 32px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .legend-swatch.critical { background: linear-gradient(135deg, #E11D48, #BE123C); }
+    .legend-swatch.non-critical { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+    .legend-swatch.float-swatch {
+      background: #DBEAFE;
+      border: 1.5px dashed #93C5FD;
+    }
+    .legend-line {
+      width: 32px;
+      height: 0;
+      border-top: 2px solid #94A3B8;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .legend-line::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: -5px;
+      border: 4px solid transparent;
+      border-left: 6px solid #94A3B8;
+    }
+    .legend-line.crit-arrow {
+      border-top-color: #E11D48;
+    }
+    .legend-line.crit-arrow::after {
+      border-left-color: #E11D48;
+    }
+    .legend-today {
+      width: 32px;
+      height: 14px;
+      border-left: 2.5px dashed #F59E0B;
+      flex-shrink: 0;
+    }
+
+    /* ===== ACTIVITY NETWORK ===== */
+    .network-container {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 24px;
+      overflow-x: auto;
+      margin-bottom: 12px;
+    }
+    .network-svg text {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ===== GANTT CHART ===== */
+    .gantt-wrapper {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .gantt-scroll {
+      overflow-x: auto;
+      position: relative;
+    }
+    .gantt-table {
+      border-collapse: collapse;
+      min-width: 100%;
+    }
+    .gantt-table th, .gantt-table td {
+      padding: 0;
+      border: none;
+      vertical-align: middle;
+    }
+
+    /* Header rows */
+    .gantt-table thead tr:first-child th {
+      background: #0F172A;
+      color: #F8FAFC;
+      font-weight: 600;
+      font-size: 0.8rem;
+      height: 30px;
+      text-align: center;
+      border-right: 1px solid #334155;
+    }
+    .gantt-table thead tr:first-child th.info-col {
+      background: #0F172A;
+      text-align: left;
+      padding-left: 14px;
+      border-right: 2px solid #334155;
+    }
+    .gantt-table thead tr:nth-child(2) th {
+      background: #1E293B;
+      color: #94A3B8;
+      font-weight: 500;
+      font-size: 0.7rem;
+      height: 24px;
+      text-align: center;
+      border-right: 1px solid #334155;
+    }
+    .gantt-table thead tr:nth-child(2) th.info-col {
+      background: #1E293B;
+      border-right: 2px solid #334155;
+    }
+    .gantt-table thead tr:nth-child(2) th.weekend-border {
+      border-right: 2px solid #475569;
+    }
+
+    /* Info columns */
+    .info-col {
+      white-space: nowrap;
+      padding: 0 10px !important;
+      border-right: 2px solid #E2E8F0 !important;
+      text-align: left;
+    }
+    .col-id { width: 52px; min-width: 52px; font-weight: 700; color: #0F172A; font-size: 0.8rem; }
+    .col-name { width: 250px; min-width: 250px; font-size: 0.82rem; color: #334155; }
+    .col-dur { width: 36px; min-width: 36px; text-align: center !important; font-size: 0.78rem; color: #64748B; }
+    .col-float { width: 44px; min-width: 44px; text-align: center !important; font-size: 0.78rem; color: #64748B; }
+
+    /* Section header rows */
+    .section-row td {
+      background: #F1F5F9;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 7px 14px !important;
+      border-bottom: 1px solid #E2E8F0;
+      border-top: 1px solid #E2E8F0;
+    }
+
+    /* Task rows */
+    .task-row td {
+      height: 42px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+    .task-row:hover td {
+      background: #F8FAFC;
+    }
+
+    /* Day cells */
+    .day-cell {
+      width: 36px;
+      min-width: 36px;
+      max-width: 36px;
+      position: relative;
+      border-right: 1px solid #F1F5F9;
+    }
+    .day-cell.week-end {
+      border-right: 1px solid #E2E8F0;
+    }
+
+    /* Bars */
+    .bar {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 24px;
+      border-radius: 4px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      cursor: default;
+      transition: box-shadow 0.15s;
+    }
+    .bar:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .bar.critical {
+      background: linear-gradient(135deg, #E11D48, #BE123C);
+    }
+    .bar.non-critical {
+      background: linear-gradient(135deg, #3B82F6, #2563EB);
+    }
+    .float-indicator {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 24px;
+      border-radius: 4px;
+      z-index: 1;
+      background: #EFF6FF;
+      border: 1.5px dashed #93C5FD;
+    }
+
+    /* Today marker */
+    .today-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2.5px;
+      background: #F59E0B;
+      z-index: 5;
+      pointer-events: none;
+    }
+    .today-label {
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #F59E0B;
+      white-space: nowrap;
+      background: #FFFBEB;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* Arrow SVG overlay */
+    .gantt-arrows {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* ===== SUMMARY BOX ===== */
+    .summary-box {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .summary-card {
+      flex: 1;
+      min-width: 280px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 18px 22px;
+    }
+    .summary-card h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 8px;
+    }
+    .summary-card p, .summary-card li {
+      font-size: 0.85rem;
+      color: #475569;
+      line-height: 1.6;
+    }
+    .summary-card ul {
+      list-style: none;
+      padding: 0;
+    }
+    .summary-card li::before {
+      content: '\2192';
+      margin-right: 6px;
+      color: #E11D48;
+      font-weight: 700;
+    }
+    .crit-path-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .crit-path-flow .cp-node {
+      background: linear-gradient(135deg, #E11D48, #BE123C);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+    .crit-path-flow .cp-arrow {
+      color: #E11D48;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    /* ===== TOOLTIP ===== */
+    .tooltip {
+      display: none;
+      position: fixed;
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      z-index: 100;
+      pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      max-width: 300px;
+    }
+    .tooltip.visible { display: block; }
+    .tooltip strong { color: #FCD34D; }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Activity Network Diagram &amp; Gantt Chart</h1>
+  <p class="subtitle">SCC.200 Group 6-6 &mdash; Regional Transport Hub &mdash; Implementation Phase (Weeks 15&ndash;22)</p>
+</div>
+
+<!-- ===== ACTIVITY NETWORK ===== -->
+<div class="section-title">Activity Network Diagram (Critical Path Highlighted)</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch critical"></div> Critical Path Task</div>
+  <div class="legend-item"><div class="legend-swatch non-critical"></div> Non-Critical Task</div>
+  <div class="legend-item"><div class="legend-line crit-arrow"></div> Critical Dependency</div>
+  <div class="legend-item"><div class="legend-line"></div> Dependency</div>
+</div>
+<div class="network-container">
+  <svg id="network-svg" class="network-svg"></svg>
+</div>
+
+<!-- ===== GANTT CHART ===== -->
+<div class="section-title">Gantt Chart (Weeks 15&ndash;22)</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch critical"></div> Critical Path</div>
+  <div class="legend-item"><div class="legend-swatch non-critical"></div> Non-Critical</div>
+  <div class="legend-item"><div class="legend-swatch float-swatch"></div> Total Float</div>
+  <div class="legend-item"><div class="legend-line"></div> Dependency Arrow</div>
+  <div class="legend-item"><div class="legend-today"></div> Today</div>
+</div>
+<div class="gantt-wrapper">
+  <div class="gantt-scroll" id="gantt-scroll">
+    <table class="gantt-table" id="gantt-table"></table>
+    <svg class="gantt-arrows" id="gantt-arrows"></svg>
+  </div>
+</div>
+
+<!-- ===== SUMMARY ===== -->
+<div class="summary-box" id="summary-box"></div>
+
+<!-- ===== TOOLTIP ===== -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ================================================================
+// DATA
+// ================================================================
+const PROJECT_START = new Date(2026, 1, 9); // Mon 9 Feb 2026 (Week 15)
+const TODAY = new Date(); // live current date and time
+const DAY_PX = 36;
+
+const TASKS = [
+  { id:'TL1',   name:'Project setup + repo standards',                  duration:3, predecessors:[],                    section:'Setup' },
+  { id:'TL2',   name:'CI pipeline + staging deployment',                duration:2, predecessors:['TL1'],               section:'Setup' },
+  { id:'TL3',   name:'Backend proxy / gateway API',                     duration:5, predecessors:['TL1'],               section:'Backend Core' },
+  { id:'TL4',   name:'Stops & stations ingestion (NaPTAN/NPTG)',        duration:4, predecessors:['TL3'],               section:'Data & Map' },
+  { id:'TL5',   name:'Region restriction + map base',                   duration:4, predecessors:['TL1'],               section:'Data & Map' },
+  { id:'TL6',   name:'Search experience (text + map)',                  duration:4, predecessors:['TL4','TL5'],         section:'User Features' },
+  { id:'TL7',   name:'Stop/station detail pages (UI shell)',            duration:3, predecessors:['TL6'],               section:'User Features' },
+  { id:'TL8',   name:'Rail departures + STOMP live integration',        duration:4, predecessors:['TL3','TL7'],         section:'User Features' },
+  { id:'TL9',   name:'Live bus locations (operator view)',              duration:4, predecessors:['TL3','TL5'],         section:'User Features' },
+  { id:'TL10',  name:'Bus context (route/times info)',                  duration:2, predecessors:['TL9'],               section:'User Features' },
+  { id:'TL11',  name:'Favourites (local persistence)',                  duration:2, predecessors:['TL6','TL7'],         section:'User Features' },
+  { id:'TL12',  name:'Weather advisories / conditions panel',           duration:2, predecessors:['TL3','TL7'],         section:'User Features' },
+  { id:'TL13',  name:'Journey planning v1 (A to B)',                    duration:5, predecessors:['TL4','TL6'],         section:'Journey Planning' },
+  { id:'TL14',  name:'Journey improvements (alternatives + hub-aware)', duration:5, predecessors:['TL13'],              section:'Journey Planning' },
+  { id:'TL15a', name:'Automated acceptance testing',                    duration:3, predecessors:['TL8','TL10','TL11','TL12','TL14'], section:'Finalization' },
+  { id:'TL15b', name:'UI/accessibility polish',                         duration:2, predecessors:['TL7','TL11','TL12','TL14'],        section:'Finalization' },
+  { id:'TL15c', name:'Documentation and release packaging',             duration:2, predecessors:['TL15a','TL15b'],     section:'Finalization' },
+];
+
+// ================================================================
+// SCHEDULING: Forward & Backward Pass
+// ================================================================
+function computeSchedule() {
+  const map = {};
+  TASKS.forEach(t => { map[t.id] = { ...t, es:0, ef:0, ls:0, lf:0, float:0, isCritical:false, successors:[] }; });
+
+  // Build successor lists
+  TASKS.forEach(t => {
+    t.predecessors.forEach(pid => { map[pid].successors.push(t.id); });
+  });
+
+  // Topological order
+  const order = [];
+  const visited = new Set();
+  function visit(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    map[id].predecessors.forEach(pid => visit(pid));
+    order.push(id);
+  }
+  TASKS.forEach(t => visit(t.id));
+
+  // Forward pass
+  order.forEach(id => {
+    const t = map[id];
+    if (t.predecessors.length === 0) {
+      t.es = 0;
+    } else {
+      t.es = Math.max(...t.predecessors.map(pid => map[pid].ef));
+    }
+    t.ef = t.es + t.duration;
+  });
+
+  const projectEnd = Math.max(...Object.values(map).map(t => t.ef));
+
+  // Backward pass
+  const revOrder = [...order].reverse();
+  revOrder.forEach(id => {
+    const t = map[id];
+    if (t.successors.length === 0) {
+      t.lf = projectEnd;
+    } else {
+      t.lf = Math.min(...t.successors.map(sid => map[sid].ls));
+    }
+    t.ls = t.lf - t.duration;
+    t.float = t.ls - t.es;
+    t.isCritical = t.float === 0;
+  });
+
+  return { map, order, projectEnd };
+}
+
+const schedule = computeSchedule();
+const { map: taskMap, projectEnd } = schedule;
+
+// ================================================================
+// DATE UTILITIES
+// ================================================================
+function workingDayToDate(day) {
+  const d = new Date(PROJECT_START);
+  let count = 0;
+  while (count < day) {
+    d.setDate(d.getDate() + 1);
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) count++;
+  }
+  return new Date(d);
+}
+
+function dateToWorkingDay(date) {
+  // Strip time components to avoid off-by-one when comparing midday vs midnight
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const d = new Date(PROJECT_START.getFullYear(), PROJECT_START.getMonth(), PROJECT_START.getDate());
+  let count = 0;
+  while (d.getTime() < target.getTime()) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) count++;
+  }
+  return count;
+}
+
+function formatDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+// Total working days to display (8 weeks = 40 days)
+const TOTAL_DAYS = 40;
+
+// Build calendar day info
+const calDays = [];
+for (let i = 0; i < TOTAL_DAYS; i++) {
+  const d = workingDayToDate(i);
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const shortDay = dayNames[d.getDay()][0]; // M, T, W, T, F
+  calDays.push({ date: d, label: shortDay, dayOfWeek: d.getDay(), workingDay: i });
+}
+
+// Week grouping
+const weeks = [];
+let currentWeek = null;
+calDays.forEach((cd, i) => {
+  const weekNum = 15 + Math.floor(i / 5);
+  if (!currentWeek || currentWeek.num !== weekNum) {
+    currentWeek = { num: weekNum, days: [], start: formatDate(cd.date) };
+    weeks.push(currentWeek);
+  }
+  currentWeek.days.push(cd);
+  currentWeek.end = formatDate(cd.date);
+});
+
+// Today's working day index
+const todayWD = dateToWorkingDay(TODAY);
+
+// ================================================================
+// RENDER ACTIVITY NETWORK (interactive)
+// ================================================================
+(function renderNetwork() {
+  const svg = document.getElementById('network-svg');
+  const nodeW = 155, nodeH = 66, padX = 40, padY = 28;
+
+  // Layer assignment (topological depth)
+  const layers = {};
+  const layerOf = {};
+  TASKS.forEach(t => {
+    let depth = 0;
+    if (t.predecessors.length > 0) {
+      depth = Math.max(...t.predecessors.map(p => layerOf[p])) + 1;
+    }
+    layerOf[t.id] = depth;
+    if (!layers[depth]) layers[depth] = [];
+    layers[depth].push(t.id);
+  });
+
+  const maxLayer = Math.max(...Object.keys(layers).map(Number));
+  const maxPerLayer = Math.max(...Object.values(layers).map(l => l.length));
+
+  const colSpacing = nodeW + padX * 2;
+  const rowSpacing = nodeH + padY;
+  const svgW = (maxLayer + 1) * colSpacing + padX * 2;
+  const svgH = maxPerLayer * rowSpacing + padY * 2;
+
+  svg.setAttribute('width', svgW);
+  svg.setAttribute('height', svgH);
+  svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+
+  // Compute node positions
+  const nodePos = {};
+  for (let layer = 0; layer <= maxLayer; layer++) {
+    const ids = layers[layer] || [];
+    const count = ids.length;
+    const totalH = count * rowSpacing;
+    const startY = (svgH - totalH) / 2 + rowSpacing / 2;
+    ids.forEach((id, idx) => {
+      nodePos[id] = {
+        x: padX + layer * colSpacing + nodeW / 2,
+        y: startY + idx * rowSpacing,
+      };
+    });
+  }
+
+  // Arrowhead markers (normal + highlighted variants)
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const markerColors = { 0: '#94A3B8', 1: '#E11D48', 2: '#6366F1', 3: '#10B981' };
+  Object.entries(markerColors).forEach(([idx, color]) => {
+    const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    marker.setAttribute('id', `arrowhead-${idx}`);
+    marker.setAttribute('markerWidth', '8');
+    marker.setAttribute('markerHeight', '6');
+    marker.setAttribute('refX', '8');
+    marker.setAttribute('refY', '3');
+    marker.setAttribute('orient', 'auto');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', '0 0, 8 3, 0 6');
+    poly.setAttribute('fill', color);
+    marker.appendChild(poly);
+    defs.appendChild(marker);
+  });
+  // Gantt arrowheads
+  ['#64748B', '#E11D48'].forEach((color, i) => {
+    const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    marker.setAttribute('id', `garrow-${i}`);
+    marker.setAttribute('markerWidth', '6');
+    marker.setAttribute('markerHeight', '5');
+    marker.setAttribute('refX', '6');
+    marker.setAttribute('refY', '2.5');
+    marker.setAttribute('orient', 'auto');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', '0 0, 6 2.5, 0 5');
+    poly.setAttribute('fill', color);
+    marker.appendChild(poly);
+    defs.appendChild(marker);
+  });
+  svg.appendChild(defs);
+
+  // Draw dependency arrows and store references
+  const arrowGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  const criticalSet = new Set(TASKS.filter(t => taskMap[t.id].isCritical).map(t => t.id));
+  const arrowRefs = []; // { from, to, path, isCritEdge, origStroke, origWidth, origDash }
+
+  TASKS.forEach(t => {
+    t.predecessors.forEach(pid => {
+      const from = nodePos[pid];
+      const to = nodePos[t.id];
+      const isCritEdge = criticalSet.has(pid) && criticalSet.has(t.id) &&
+        taskMap[t.id].es === taskMap[pid].ef;
+
+      const x1 = from.x + nodeW / 2;
+      const y1 = from.y;
+      const x2 = to.x - nodeW / 2;
+      const y2 = to.y;
+      const midX = (x1 + x2) / 2;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+      path.setAttribute('fill', 'none');
+      const strokeColor = isCritEdge ? '#E11D48' : '#94A3B8';
+      const strokeWidth = isCritEdge ? '2.5' : '1.5';
+      path.setAttribute('stroke', strokeColor);
+      path.setAttribute('stroke-width', strokeWidth);
+      path.setAttribute('marker-end', `url(#arrowhead-${isCritEdge ? 1 : 0})`);
+      const dashArr = isCritEdge ? '' : '6,3';
+      if (dashArr) path.setAttribute('stroke-dasharray', dashArr);
+      path.style.transition = 'opacity 0.2s, stroke-width 0.2s';
+      arrowGroup.appendChild(path);
+
+      arrowRefs.push({ from: pid, to: t.id, path, isCritEdge, origStroke: strokeColor, origWidth: strokeWidth, origDash: dashArr });
+    });
+  });
+  svg.appendChild(arrowGroup);
+
+  // Draw nodes and store references
+  const nodeRefs = {};
+
+  TASKS.forEach(t => {
+    const pos = nodePos[t.id];
+    const isCrit = taskMap[t.id].isCritical;
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.style.cursor = 'pointer';
+    g.style.transition = 'opacity 0.2s';
+
+    // Shadow
+    const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    shadow.setAttribute('x', pos.x - nodeW/2 + 2);
+    shadow.setAttribute('y', pos.y - nodeH/2 + 2);
+    shadow.setAttribute('width', nodeW);
+    shadow.setAttribute('height', nodeH);
+    shadow.setAttribute('rx', '8');
+    shadow.setAttribute('fill', 'rgba(0,0,0,0.06)');
+    g.appendChild(shadow);
+
+    // Node rect
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', pos.x - nodeW/2);
+    rect.setAttribute('y', pos.y - nodeH/2);
+    rect.setAttribute('width', nodeW);
+    rect.setAttribute('height', nodeH);
+    rect.setAttribute('rx', '8');
+    rect.setAttribute('fill', isCrit ? '#FFF1F2' : '#EFF6FF');
+    rect.setAttribute('stroke', isCrit ? '#E11D48' : '#3B82F6');
+    rect.setAttribute('stroke-width', isCrit ? '2.5' : '1.5');
+    g.appendChild(rect);
+
+    // Task ID
+    const idText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    idText.setAttribute('x', pos.x);
+    idText.setAttribute('y', pos.y - 16);
+    idText.setAttribute('text-anchor', 'middle');
+    idText.setAttribute('font-size', '11');
+    idText.setAttribute('font-weight', '700');
+    idText.setAttribute('fill', isCrit ? '#BE123C' : '#1D4ED8');
+    idText.textContent = t.id;
+    g.appendChild(idText);
+
+    // Task name (truncated)
+    const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    nameText.setAttribute('x', pos.x);
+    nameText.setAttribute('y', pos.y + 1);
+    nameText.setAttribute('text-anchor', 'middle');
+    nameText.setAttribute('font-size', '9');
+    nameText.setAttribute('fill', '#475569');
+    const maxChars = 22;
+    nameText.textContent = t.name.length > maxChars ? t.name.slice(0, maxChars-1) + '\u2026' : t.name;
+    g.appendChild(nameText);
+
+    // Duration + Float
+    const durText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    durText.setAttribute('x', pos.x);
+    durText.setAttribute('y', pos.y + 18);
+    durText.setAttribute('text-anchor', 'middle');
+    durText.setAttribute('font-size', '9.5');
+    durText.setAttribute('font-weight', '600');
+    durText.setAttribute('fill', '#64748B');
+    const floatStr = taskMap[t.id].float > 0 ? ` | Float: ${taskMap[t.id].float}d` : '';
+    durText.textContent = `${t.duration}d${floatStr}`;
+    g.appendChild(durText);
+
+    svg.appendChild(g);
+    nodeRefs[t.id] = g;
+  });
+
+  // ---- HOVER INTERACTIVITY ----
+
+  // Walk the full dependency chain (all ancestors + all descendants)
+  function getFullChain(taskId) {
+    const chain = new Set([taskId]);
+    function walkUp(id) {
+      const t = TASKS.find(x => x.id === id);
+      if (!t) return;
+      t.predecessors.forEach(pid => {
+        if (!chain.has(pid)) { chain.add(pid); walkUp(pid); }
+      });
+    }
+    function walkDown(id) {
+      const info = taskMap[id];
+      if (!info) return;
+      info.successors.forEach(sid => {
+        if (!chain.has(sid)) { chain.add(sid); walkDown(sid); }
+      });
+    }
+    walkUp(taskId);
+    walkDown(taskId);
+    return chain;
+  }
+
+  TASKS.forEach(t => {
+    const g = nodeRefs[t.id];
+    const info = taskMap[t.id];
+
+    g.addEventListener('mouseenter', (e) => {
+      const chain = getFullChain(t.id);
+
+      // Dim unrelated nodes, keep connected ones bright
+      Object.entries(nodeRefs).forEach(([id, ng]) => {
+        ng.style.opacity = chain.has(id) ? '1' : '0.12';
+      });
+
+      // Highlight connected arrows, dim the rest
+      arrowRefs.forEach(a => {
+        const connected = chain.has(a.from) && chain.has(a.to);
+        if (connected) {
+          a.path.style.opacity = '1';
+          a.path.setAttribute('stroke-width', a.isCritEdge ? '3.5' : '3');
+          // Use brighter color for highlighted non-critical arrows
+          if (!a.isCritEdge) {
+            a.path.setAttribute('stroke', '#6366F1');
+            a.path.setAttribute('marker-end', 'url(#arrowhead-2)');
+            a.path.removeAttribute('stroke-dasharray');
+          }
+        } else {
+          a.path.style.opacity = '0.06';
+        }
+      });
+
+      // Show tooltip
+      const esDate = formatDate(workingDayToDate(info.es));
+      const efDate = formatDate(workingDayToDate(info.ef - 1));
+      const predsStr = t.predecessors.length ? t.predecessors.join(', ') : 'None';
+      const succsStr = info.successors.length ? info.successors.join(', ') : 'None';
+      tooltipEl.innerHTML = `
+        <strong>${t.id}: ${t.name}</strong><br>
+        Duration: ${t.duration} working days<br>
+        Dates: ${esDate} &ndash; ${efDate}<br>
+        Float: ${info.float} day${info.float !== 1 ? 's' : ''}<br>
+        ${info.isCritical ? '<span style="color:#FCA5A5;">&#9733; Critical Path</span><br>' : ''}
+        Predecessors: ${predsStr}<br>
+        Successors: ${succsStr}
+      `;
+      tooltipEl.classList.add('visible');
+      moveTooltip(e);
+    });
+
+    g.addEventListener('mousemove', moveTooltip);
+
+    g.addEventListener('mouseleave', () => {
+      // Reset all nodes
+      Object.values(nodeRefs).forEach(ng => { ng.style.opacity = '1'; });
+      // Reset all arrows
+      arrowRefs.forEach(a => {
+        a.path.style.opacity = '1';
+        a.path.setAttribute('stroke', a.origStroke);
+        a.path.setAttribute('stroke-width', a.origWidth);
+        a.path.setAttribute('marker-end', `url(#arrowhead-${a.isCritEdge ? 1 : 0})`);
+        if (a.origDash) {
+          a.path.setAttribute('stroke-dasharray', a.origDash);
+        } else {
+          a.path.removeAttribute('stroke-dasharray');
+        }
+      });
+      hideTooltip();
+    });
+  });
+})();
+
+// ================================================================
+// RENDER GANTT CHART
+// ================================================================
+(function renderGantt() {
+  const table = document.getElementById('gantt-table');
+
+  // === THEAD ===
+  const thead = document.createElement('thead');
+
+  // Week header row
+  const weekRow = document.createElement('tr');
+  ['ID', 'Task Name', 'Days', 'Float'].forEach((label, i) => {
+    const th = document.createElement('th');
+    th.className = 'info-col';
+    th.textContent = label;
+    weekRow.appendChild(th);
+  });
+  weeks.forEach(w => {
+    const th = document.createElement('th');
+    th.colSpan = w.days.length;
+    th.textContent = `Week ${w.num}`;
+    weekRow.appendChild(th);
+  });
+  thead.appendChild(weekRow);
+
+  // Day header row
+  const dayRow = document.createElement('tr');
+  for (let i = 0; i < 4; i++) {
+    const th = document.createElement('th');
+    th.className = 'info-col';
+    dayRow.appendChild(th);
+  }
+  calDays.forEach((cd, idx) => {
+    const th = document.createElement('th');
+    th.textContent = cd.label;
+    if ((idx + 1) % 5 === 0) th.className = 'weekend-border';
+    dayRow.appendChild(th);
+  });
+  thead.appendChild(dayRow);
+  table.appendChild(thead);
+
+  // === TBODY ===
+  const tbody = document.createElement('tbody');
+  const sections = [];
+  const sectionOrder = ['Setup', 'Backend Core', 'Data & Map', 'User Features', 'Journey Planning', 'Finalization'];
+  sectionOrder.forEach(sec => {
+    sections.push({ name: sec, tasks: TASKS.filter(t => t.section === sec) });
+  });
+
+  // Track bar positions for arrows
+  const barPositions = {};
+  let rowIndex = 0;
+
+  sections.forEach(sec => {
+    // Section header
+    const secRow = document.createElement('tr');
+    secRow.className = 'section-row';
+    const secTd = document.createElement('td');
+    secTd.colSpan = 4 + TOTAL_DAYS;
+    secTd.textContent = sec.name;
+    secRow.appendChild(secTd);
+    tbody.appendChild(secRow);
+    rowIndex++;
+
+    sec.tasks.forEach(t => {
+      const info = taskMap[t.id];
+      const tr = document.createElement('tr');
+      tr.className = 'task-row';
+
+      // Info cells
+      const idTd = document.createElement('td');
+      idTd.className = 'info-col col-id';
+      idTd.textContent = t.id;
+      idTd.style.color = info.isCritical ? '#BE123C' : '#0F172A';
+      tr.appendChild(idTd);
+
+      const nameTd = document.createElement('td');
+      nameTd.className = 'info-col col-name';
+      nameTd.textContent = t.name;
+      tr.appendChild(nameTd);
+
+      const durTd = document.createElement('td');
+      durTd.className = 'info-col col-dur';
+      durTd.textContent = t.duration + 'd';
+      tr.appendChild(durTd);
+
+      const floatTd = document.createElement('td');
+      floatTd.className = 'info-col col-float';
+      floatTd.textContent = info.float > 0 ? info.float + 'd' : '-';
+      floatTd.style.color = info.float === 0 ? '#E11D48' : '#64748B';
+      floatTd.style.fontWeight = info.float === 0 ? '700' : '400';
+      tr.appendChild(floatTd);
+
+      // Day cells
+      for (let d = 0; d < TOTAL_DAYS; d++) {
+        const td = document.createElement('td');
+        td.className = 'day-cell' + ((d + 1) % 5 === 0 ? ' week-end' : '');
+        td.style.position = 'relative';
+
+        // Float indicator (shows slack after early finish)
+        if (info.float > 0 && d >= info.ef && d < info.ef + info.float) {
+          if (d === info.ef) {
+            const floatDiv = document.createElement('div');
+            floatDiv.className = 'float-indicator';
+            floatDiv.style.left = '0px';
+            floatDiv.style.width = (info.float * DAY_PX) + 'px';
+            td.appendChild(floatDiv);
+          }
+        }
+
+        // Task bar
+        if (d === info.es) {
+          const bar = document.createElement('div');
+          bar.className = 'bar ' + (info.isCritical ? 'critical' : 'non-critical');
+          bar.style.left = '0px';
+          bar.style.width = (info.duration * DAY_PX - 4) + 'px';
+          bar.textContent = t.id;
+          // Shrink font for short bars so label fits
+          if (info.duration <= 2) bar.style.fontSize = '0.6rem';
+          bar.setAttribute('data-task', t.id);
+
+          // Tooltip events
+          bar.addEventListener('mouseenter', (e) => showTooltip(e, t, info));
+          bar.addEventListener('mousemove', moveTooltip);
+          bar.addEventListener('mouseleave', hideTooltip);
+
+          td.appendChild(bar);
+        }
+
+        tr.appendChild(td);
+      }
+
+      tbody.appendChild(tr);
+
+      // Record bar position for arrows
+      barPositions[t.id] = {
+        row: rowIndex,
+        es: info.es,
+        ef: info.ef,
+      };
+      rowIndex++;
+    });
+  });
+
+  table.appendChild(tbody);
+
+  // === TODAY MARKER (positioned from actual DOM cells + time of day) ===
+  requestAnimationFrame(() => {
+    if (todayWD < 0 || todayWD >= TOTAL_DAYS) return;
+    const scrollDiv = document.getElementById('gantt-scroll');
+    const firstTaskRow = table.querySelector('.task-row');
+    if (!firstTaskRow) return;
+
+    // Day cells start after the 4 info columns (ID, Name, Days, Float)
+    const dayCell = firstTaskRow.children[4 + todayWD];
+    if (!dayCell) return;
+
+    const scrollRect = scrollDiv.getBoundingClientRect();
+    const cellRect = dayCell.getBoundingClientRect();
+
+    // Sub-day fraction based on working hours (8 AM to 6 PM = 10 hours)
+    const now = new Date();
+    const hours = now.getHours() + now.getMinutes() / 60;
+    const fraction = Math.max(0, Math.min(1, (hours - 8) / 10));
+
+    const marker = document.createElement('div');
+    marker.className = 'today-marker';
+    marker.style.left = (cellRect.left - scrollRect.left + fraction * cellRect.width) + 'px';
+    marker.style.top = '0px';
+    marker.style.height = table.offsetHeight + 'px';
+
+    const label = document.createElement('div');
+    label.className = 'today-label';
+    label.textContent = 'Today';
+    marker.appendChild(label);
+    scrollDiv.appendChild(marker);
+  });
+
+  // === DEPENDENCY ARROWS ===
+  requestAnimationFrame(() => {
+    const arrowSvg = document.getElementById('gantt-arrows');
+    arrowSvg.setAttribute('width', table.offsetWidth);
+    arrowSvg.setAttribute('height', table.offsetHeight);
+    arrowSvg.innerHTML = '';
+
+    // Reuse defs from network SVG
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    ['#64748B', '#E11D48'].forEach((color, i) => {
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      marker.setAttribute('id', `ga-${i}`);
+      marker.setAttribute('markerWidth', '5');
+      marker.setAttribute('markerHeight', '4');
+      marker.setAttribute('refX', '5');
+      marker.setAttribute('refY', '2');
+      marker.setAttribute('orient', 'auto');
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      poly.setAttribute('points', '0 0, 5 2, 0 4');
+      poly.setAttribute('fill', color);
+      marker.appendChild(poly);
+      defs.appendChild(marker);
+    });
+    arrowSvg.appendChild(defs);
+
+    // Find actual bar element positions
+    const bars = table.querySelectorAll('.bar');
+    const barRects = {};
+    bars.forEach(bar => {
+      const id = bar.getAttribute('data-task');
+      const rect = bar.getBoundingClientRect();
+      const scrollRect = document.getElementById('gantt-scroll').getBoundingClientRect();
+      barRects[id] = {
+        left: rect.left - scrollRect.left,
+        right: rect.right - scrollRect.left,
+        top: rect.top - scrollRect.top,
+        bottom: rect.bottom - scrollRect.top,
+        cy: (rect.top + rect.bottom) / 2 - scrollRect.top,
+      };
+    });
+
+    // Draw arrows
+    TASKS.forEach(t => {
+      t.predecessors.forEach(pid => {
+        const from = barRects[pid];
+        const to = barRects[t.id];
+        if (!from || !to) return;
+
+        const isCritEdge = taskMap[pid].isCritical && taskMap[t.id].isCritical &&
+          taskMap[t.id].es === taskMap[pid].ef;
+
+        const x1 = from.right + 1;
+        const y1 = from.cy;
+        const x2 = to.left - 2;
+        const y2 = to.cy;
+
+        // Route: right from bar end, then vertical, then right to next bar
+        const midX = Math.min(x1 + 12, (x1 + x2) / 2);
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2} ${y2}`);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', isCritEdge ? '#E11D48' : '#94A3B8');
+        path.setAttribute('stroke-width', isCritEdge ? '1.8' : '1');
+        path.setAttribute('stroke-opacity', isCritEdge ? '0.8' : '0.45');
+        path.setAttribute('marker-end', `url(#ga-${isCritEdge ? 1 : 0})`);
+        arrowSvg.appendChild(path);
+      });
+    });
+  });
+})();
+
+// ================================================================
+// TOOLTIP
+// ================================================================
+const tooltipEl = document.getElementById('tooltip');
+function showTooltip(e, t, info) {
+  const esDate = formatDate(workingDayToDate(info.es));
+  const efDate = formatDate(workingDayToDate(info.ef - 1));
+  const lsDate = formatDate(workingDayToDate(info.ls));
+  const lfDate = formatDate(workingDayToDate(info.lf - 1));
+
+  tooltipEl.innerHTML = `
+    <strong>${t.id}: ${t.name}</strong><br>
+    Duration: ${t.duration} working days<br>
+    Early: ${esDate} &ndash; ${efDate}<br>
+    Late: ${lsDate} &ndash; ${lfDate}<br>
+    Float: ${info.float} day${info.float !== 1 ? 's' : ''}<br>
+    ${info.isCritical ? '<span style="color:#FCA5A5;">&#9733; Critical Path</span>' : ''}
+    ${t.predecessors.length ? '<br>Depends on: ' + t.predecessors.join(', ') : ''}
+  `;
+  tooltipEl.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  tooltipEl.style.left = (e.clientX + 14) + 'px';
+  tooltipEl.style.top = (e.clientY + 14) + 'px';
+}
+function hideTooltip() {
+  tooltipEl.classList.remove('visible');
+}
+
+// ================================================================
+// SUMMARY
+// ================================================================
+(function renderSummary() {
+  const box = document.getElementById('summary-box');
+
+  // Critical path card
+  const critPath = ['TL1','TL3','TL4','TL6','TL13','TL14','TL15a','TL15c'];
+  const card1 = document.createElement('div');
+  card1.className = 'summary-card';
+  card1.innerHTML = `
+    <h3>Critical Path</h3>
+    <p>Total duration: <strong>${projectEnd} working days</strong> (~${(projectEnd/5).toFixed(1)} weeks)</p>
+    <div class="crit-path-flow" style="margin-top:10px;">
+      ${critPath.map((id, i) =>
+        `<span class="cp-node">${id}</span>${i < critPath.length - 1 ? '<span class="cp-arrow">&rarr;</span>' : ''}`
+      ).join('')}
+    </div>
+    <p style="margin-top:10px; font-size:0.8rem; color:#64748B;">
+      The critical path determines the minimum project duration.<br>
+      Any delay on these tasks directly delays the project finish date.
+    </p>
+  `;
+  box.appendChild(card1);
+
+  // Key dates card
+  const card2 = document.createElement('div');
+  card2.className = 'summary-card';
+  const startDate = formatDate(workingDayToDate(0));
+  const endDate = formatDate(workingDayToDate(projectEnd - 1));
+  card2.innerHTML = `
+    <h3>Key Dates</h3>
+    <ul>
+      <li>Project start: <strong>${startDate} 2026</strong> (Week 15)</li>
+      <li>Critical path end: <strong>${endDate} 2026</strong> (~Week ${15 + Math.floor((projectEnd - 1) / 5)})</li>
+      <li>Available float: Weeks 15&ndash;22 window provides buffer beyond critical path</li>
+      <li>Parallel streams: up to 4 tasks can execute concurrently in peak weeks</li>
+    </ul>
+  `;
+  box.appendChild(card2);
+
+  // Parallelism card
+  const card3 = document.createElement('div');
+  card3.className = 'summary-card';
+  // Compute peak parallelism
+  const dayBuckets = new Array(TOTAL_DAYS).fill(0);
+  TASKS.forEach(t => {
+    const info = taskMap[t.id];
+    for (let d = info.es; d < info.ef; d++) {
+      if (d < TOTAL_DAYS) dayBuckets[d]++;
+    }
+  });
+  const maxPar = Math.max(...dayBuckets);
+  const maxParDay = dayBuckets.indexOf(maxPar);
+
+  card3.innerHTML = `
+    <h3>Resource Utilization</h3>
+    <ul>
+      <li>Total task effort: <strong>${TASKS.reduce((s,t)=>s+t.duration,0)} working days</strong> across ${TASKS.length} tasks</li>
+      <li>Peak parallelism: <strong>${maxPar} concurrent tasks</strong> (around day ${maxParDay + 1}, ${formatDate(workingDayToDate(maxParDay))})</li>
+      <li>Non-critical tasks have up to <strong>${Math.max(...TASKS.map(t=>taskMap[t.id].float))} days</strong> of scheduling float</li>
+      <li>5-person team can absorb the peak parallelism without overallocation</li>
+    </ul>
+  `;
+  box.appendChild(card3);
+})();
+</script>
+</body>
+</html>

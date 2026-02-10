@@ -1,16 +1,21 @@
-# SCC.200 Activity Network Diagram & Gantt Chart
+# SCC.200 Group 6-6 — Interactive Diagrams
 
-Interactive activity network diagram and Gantt chart created for the **SCC.200 Group Project** (Group 6-6) at Lancaster University. This visualisation accompanies the design report for our **Regional Transport Hub** web application.
+Interactive companion diagrams for the SCC.200 Design Report — Regional Transport Hub.
 
-Hosted via GitHub Pages as part of our design document:
-**[View Live](https://m47h13uk.github.io/scc200-gantt-chart-and-network-diagram/)**
+## Pages
 
-## What's Included
+| Diagram | Link |
+|---------|------|
+| **Landing Page** | [Home](https://m47h13uk.github.io/scc200-gantt-chart-and-architecture-diagrams/) |
+| **Gantt Chart & Activity Network** | [View](https://m47h13uk.github.io/scc200-gantt-chart-and-architecture-diagrams/gantt-chart/) |
+| **System Architecture Diagrams** | [View](https://m47h13uk.github.io/scc200-gantt-chart-and-architecture-diagrams/architecture-diagrams/) |
 
-- **Activity Network Diagram** -- all 17 implementation tasks laid out as a directed graph with dependency arrows and the critical path highlighted. Hover any node to see full details and highlight its entire dependency chain.
-- **Gantt Chart** -- week-by-week timeline (Weeks 15--22) with task bars, dependency arrows, total float indicators, and a live "Today" marker. Hover any bar for scheduling details.
-- **Summary Cards** -- critical path breakdown, key project dates, and resource utilisation metrics.
+## Structure
 
-## Group 6-6
+```
+index.html                         # Landing page
+gantt-chart/index.html             # Gantt chart & activity network diagram
+architecture-diagrams/index.html   # 5 interactive system architecture diagrams
+```
 
-Lee Le, Ethan Merry, Mackenzie Ingham, Abdurahman Midoun, Mathieu Kusno
+Hosted via GitHub Pages from the `main` branch.
